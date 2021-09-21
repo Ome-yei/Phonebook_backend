@@ -76,6 +76,10 @@ app.get('/info', (req, res) => {
     res.send(htmlInfo);
 })
 
+app.get('/', (req, res) => {
+    res.json({content: "System is back online"})
+});
+
 app.get('/api/persons', (req, res) => {
     res.json(persons);
 })
