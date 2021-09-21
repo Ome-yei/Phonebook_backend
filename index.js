@@ -1,40 +1,42 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-
-const morgan = require('morgan');
 const cors = require('cors')
 
-app.use(express.json())
+// Takes to JSON data from the request and converts it to a javascript 
+// object and then attaches it to the body property
+app.use(express.json());
+
+// Allows request from all origin (CORS Error)
 app.use(cors())
 
 // morgan.token('data', function (req, res) {return JSON.stringify(req.body)});
 // app.use(morgan(':method :url :status :res[content-length] - :response-time ms {:data}'));
 
-// let persons = [
-//     {
-//         "id": 1,
-//         "name": "Arto Hellas",
-//         "number": "040-123456"
-//     },
-//     {
-//         "id": 2,
-//         "name": "Ada Lovelace",
-//         "number": "39-44-5323523"
-//     },
-//     {
-//         "id": 3,
-//         "name": "Dan Abramov",
-//         "number": "12-43-234345"
-//     },
-//     {
-//         "id": 4,
-//         "name": "Mary Poppendieck",
-//         "number": "39-23-6423122"
-//     }
-// ]
+let persons = [
+    {
+        "id": 1,
+        "name": "Arto Hellas",
+        "number": "040-123456"
+    },
+    {
+        "id": 2,
+        "name": "Ada Lovelace",
+        "number": "39-44-5323523"
+    },
+    {
+        "id": 3,
+        "name": "Dan Abramov",
+        "number": "12-43-234345"
+    },
+    {
+        "id": 4,
+        "name": "Mary Poppendieck",
+        "number": "39-23-6423122"
+    }
+]
 
 app.get('/', (req, res) => {
-    res.json({content: "System is back online"})
+    res.json(persons)
 });
 
 // app.get('/info', (req, res) => {
