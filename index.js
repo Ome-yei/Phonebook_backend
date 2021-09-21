@@ -33,6 +33,10 @@ let persons = [
     }
 ]
 
+app.get('/', (req, res) => {
+    res.json({content: "System is back online"})
+});
+
 app.get('/info', (req, res) => {
     const phonebookSize = persons.length;
 
@@ -76,10 +80,6 @@ app.get('/info', (req, res) => {
     res.send(htmlInfo);
 })
 
-app.get('/', (req, res) => {
-    res.json({content: "System is back online"})
-});
-
 app.get('/api/persons', (req, res) => {
     res.json(persons);
 })
@@ -122,5 +122,5 @@ app.post('/api/persons', (req, res) => {
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`System is running on ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
