@@ -3,7 +3,6 @@ const app = express();
 const cors = require('cors')
 
 const Person = require('./models/person');
-const { count } = require("./models/person");
 
 // Takes to JSON data from the request and converts it to a javascript 
 // object and then attaches it to the body property
