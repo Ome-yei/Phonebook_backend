@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 const cors = require('cors')
 
+const Person = require('./models/person');
+const { count } = require("./models/person");
+
 // Takes to JSON data from the request and converts it to a javascript 
 // object and then attaches it to the body property
 app.use(express.json());
@@ -14,33 +17,9 @@ app.use(express.static('build'))
 // morgan.token('data', function (req, res) {return JSON.stringify(req.body)});
 // app.use(morgan(':method :url :status :res[content-length] - :response-time ms {:data}'));
 
-let persons = [
-    {
-        "id": 1,
-        "name": "Arto Hellas",
-        "number": "040-123456"
-    },
-    {
-        "id": 2,
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523"
-    },
-    {
-        "id": 3,
-        "name": "Dan Abramov",
-        "number": "12-43-234345"
-    },
-    {
-        "id": 4,
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
-    }
-]
-
 
 app.get('/info', (req, res) => {
-    const phonebookSize = persons.length;
-
+    
     const months = {
         1: "Jan",
         2: "Feb",
@@ -76,49 +55,54 @@ app.get('/info', (req, res) => {
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const recorderData = `${weekday} ${month} ${date} ${year} ${time} ${timezone}`;
-    const htmlInfo = `<div><p>Phone has info for ${phonebookSize} people</p><p>${recorderData}</p></div>`;
 
-    res.send(htmlInfo);
+    Person.count((err, count) => {
+        let phonebookSize = count;
+        const htmlInfo = `<div><p>Phone has info for ${phonebookSize} people</p><p>${recorderData}</p></div>`;
+        res.send(htmlInfo);
+    })
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons);
+    Person.find({}).then(notes => {
+        res.json(notes);
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find(person => person.id === id);
-
-    res.json(person);
+    Person.findById(req.params.id).then(person => {
+        res.json(person)
+      })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-    const delete_id = Number(req.params.id);
-    persons = persons.filter(person => person.id !== delete_id);
+    const delete_id = req.params.id;
 
-    // Check if the item was actually deleted
-    res.status(204).end();
+    Person.deleteOne( {'_id': delete_id}, (err, obj) => {
+        if(err) console.log(err);
+        console.log("Person terminated...")
+        res.status(204).end();
+    } )
+    
 })
 
 app.post('/api/persons', (req, res) => {
-    const maxId = persons.length > 0
-    ? Math.max(...persons.map(n => n.id)) 
-    : 0
+    const body = req.body;
 
-    let newPerson = req.body;
-    newPerson.id = maxId + 1;
-
-    if(!newPerson.name || !newPerson.number){
-        return res.status(400).json({error: 'name or number missing'})
+    if(!body){
+        return res.status(400).json({ error: "System malfunction, conten is missing..." });
     }
 
-    let personExists = persons.find((person => person.name === newPerson.name));
-    if(personExists){
-        return res.status(400).json({error: 'name must be unique'})
-    }
+    console.log("Body", body);
 
-    persons.push(newPerson);
-    res.json(newPerson);
+    const person = new Person({
+        name: body.name,
+        phone: body.phone,
+    })
+
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
 });
 
 const PORT = process.env.PORT || 3001
