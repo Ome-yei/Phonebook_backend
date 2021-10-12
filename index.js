@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors')
 
-const Person = require('./models/person');
+app.use(express.static('build'))
 
 // Takes to JSON data from the request and converts it to a javascript 
 // object and then attaches it to the body property
@@ -11,14 +11,14 @@ app.use(express.json());
 // Allows request from all origin (CORS Error)
 app.use(cors())
 
-app.use(express.static('build'))
+const Person = require('./models/person');
 
 // morgan.token('data', function (req, res) {return JSON.stringify(req.body)});
 // app.use(morgan(':method :url :status :res[content-length] - :response-time ms {:data}'));
 
 
 app.get('/info', (req, res) => {
-    
+
     const months = {
         1: "Jan",
         2: "Feb",
@@ -71,24 +71,38 @@ app.get('/api/persons', (req, res) => {
 app.get('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id).then(person => {
         res.json(person)
-      })
+    })
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     const delete_id = req.params.id;
 
-    Person.deleteOne( {'_id': delete_id}, (err, obj) => {
-        if(err) console.log(err);
-        console.log("Person terminated...")
-        res.status(204).end();
-    } )
-    
+    Person.findByIdAndRemove(delete_id)
+        .then(result => {
+            res.status(204).end()
+        })
+        .catch(error => next(error));
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+    const body = req.body;
+
+    const person = {
+        name: body.name,
+        phone: body.phone
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, {new: true})
+        .then(updatePerson => {
+            res.json(updatePerson);
+        })
+        .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res) => {
     const body = req.body;
 
-    if(!body){
+    if (!body) {
         return res.status(400).json({ error: "System malfunction, conten is missing..." });
     }
 
@@ -104,7 +118,20 @@ app.post('/api/persons', (req, res) => {
     })
 });
 
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return res.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    next(error)
+  }
+
+// this has to be the last loaded middleware.
+app.use(errorHandler)
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })

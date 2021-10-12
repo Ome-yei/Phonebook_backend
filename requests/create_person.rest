@@ -5,3 +5,12 @@ content-type: application/json
     "name": "Pilot 1a",
     "phone": "256789"
 }
+
+###
+PUT http://localhost:3001/api/persons/614e85b941b2ed571241833a
+content-type: application/json
+
+{
+    "name": "Super-Man",
+    "phone": "569-888-7777" 
+}
