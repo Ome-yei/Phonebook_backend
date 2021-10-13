@@ -1,11 +1,12 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 const url = process.env.DATABASE_CONNECTION_URL;
 
 // Establish connection with the database
 mongoose.connect(url)
     .then(result => {
-        console.log("Connection with DB establiseh...");
+        console.log("Connection with DB established...");
     })
     .catch((error) => {
         console.log("Error, cannot establish connection...");
@@ -13,9 +14,14 @@ mongoose.connect(url)
 
 // Create a Schema
 const personSchema = new mongoose.Schema({
-    name: String,
+    name: {
+        type: String,
+        unique: true
+    },
     phone: String
 });
+
+personSchema.plugin(uniqueValidator);
 
 // Remove extra params passed back by MDB 
 personSchema.set('toJSON', {
